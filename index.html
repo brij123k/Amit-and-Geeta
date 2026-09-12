@@ -62,12 +62,7 @@
         .site .second-page > * {
             opacity: 0;
 
-            transform: translateY(60px) translateZ(0);
-
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-
-            will-change: transform, opacity;
+            transform: translateY(60px);
 
             transition:
                 opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
@@ -77,7 +72,7 @@
         .site.revealed .second-page > *{
             opacity: 1;
 
-            transform: translateY(0) translateZ(0);
+            transform: translateY(0);
         }
 
         .site .second-page > *:nth-child(1) { transition-delay: 0.05s; }
@@ -103,7 +98,7 @@
 
             z-index: 999999;
 
-            background: #FEFEFE;
+            background: #E1DBCA;
 
             cursor: pointer;
 
@@ -224,8 +219,6 @@
             position: relative;
 
             z-index: 1;
-
-            margin-bottom: -1px;
         }
 
         .envelope-wrapper {
@@ -1516,28 +1509,37 @@
                 id="storySlider"
             >
 
+               <div class="story-card">
+                    <img
+                        class="story-image"
+                        src="./ChatGPT Image Sep 13, 2026, 01_34_26 AM.png"
+                        alt="Our Story 2020"
+                    >
+                </div>
                 <div class="story-card">
                     <img
                         class="story-image"
-                        src="./1 (1).png"
+                        src="./ChatGPT Image Sep 13, 2026, 01_25_19 AM.png"
+                        alt="Our Story 2021"
+                    >
+                </div>
+
+                <div class="story-card">
+                    <img
+                        class="story-image"
+                        src="./ChatGPT Image Sep 13, 2026, 01_16_43 AM.png"
                         alt="Our Story 2020"
                     >
                 </div>
 
 
-                <div class="story-card">
-                    <img
-                        class="story-image"
-                        src="./2.png"
-                        alt="Our Story 2021"
-                    >
-                </div>
+            
 
 
                 <div class="story-card">
                     <img
                         class="story-image"
-                        src="./3 (1).png"
+                        src="./ChatGPT Image Sep 13, 2026, 01_25_48 AM.png"
                         alt="Our Story 2022"
                     >
                 </div>
@@ -1546,38 +1548,13 @@
                 <div class="story-card">
                     <img
                         class="story-image"
-                        src="./4.png"
+                        src="./ChatGPT Image Sep 13, 2026, 01_28_06 AM.png"
                         alt="Our Story 2023"
                     >
                 </div>
 
 
-                <div class="story-card">
-                    <img
-                        class="story-image"
-                        src="./5.png"
-                        alt="Our Story 2024"
-                    >
-                </div>
-
-
-                <div class="story-card">
-                    <img
-                        class="story-image"
-                        src="./6.png"
-                        alt="Our Story 2025"
-                    >
-                </div>
-
-
-                <div class="story-card">
-                    <img
-                        class="story-image"
-                        src="./7 (1).png"
-                        alt="Our Story 2026"
-                    >
-                </div>
-
+                
             </div>
 
 
