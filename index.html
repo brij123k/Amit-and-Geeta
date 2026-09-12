@@ -62,7 +62,12 @@
         .site .second-page > * {
             opacity: 0;
 
-            transform: translateY(60px);
+            transform: translateY(60px) translateZ(0);
+
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+
+            will-change: transform, opacity;
 
             transition:
                 opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
@@ -72,7 +77,7 @@
         .site.revealed .second-page > *{
             opacity: 1;
 
-            transform: translateY(0);
+            transform: translateY(0) translateZ(0);
         }
 
         .site .second-page > *:nth-child(1) { transition-delay: 0.05s; }
@@ -98,7 +103,7 @@
 
             z-index: 999999;
 
-            background: #E1DBCA;
+            background: #FEFEFE;
 
             cursor: pointer;
 
@@ -219,6 +224,8 @@
             position: relative;
 
             z-index: 1;
+
+            margin-bottom: -1px;
         }
 
         .envelope-wrapper {
