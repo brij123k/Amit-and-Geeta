@@ -338,12 +338,40 @@
 
             transition:
                 transform 0.3s ease;
+
+            animation:
+                postCardFloat
+                4s
+                ease-in-out
+                infinite;
         }
 
         .post-card:hover {
             transform:
                 rotate(-4deg)
                 scale(1.02);
+        }
+
+        @keyframes postCardFloat {
+
+            0% {
+                transform:
+                    translateY(0)
+                    rotate(-4deg);
+            }
+
+            50% {
+                transform:
+                    translateY(-10px)
+                    rotate(-4deg);
+            }
+
+            100% {
+                transform:
+                    translateY(0)
+                    rotate(-4deg);
+            }
+
         }
 
 
