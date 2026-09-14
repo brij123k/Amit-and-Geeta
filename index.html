@@ -245,7 +245,7 @@
 
         :root {
             --note-overlap: -70px;
-            --story-overlap: -150px;
+            --story-overlap: -60px;
         }
 
         .note-section {
@@ -492,23 +492,17 @@
             margin-bottom: 30px;
         }
 
-        .countdown {
+        .wedding-date {
             display: flex;
 
             justify-content: center;
 
-            align-items: flex-start;
+            align-items: baseline;
 
-            gap: 10px;
+            gap: 4px;
         }
 
-        .time-box {
-            min-width: 95px;
-
-            text-align: center;
-        }
-
-        .time-number {
+        .wedding-date-day {
             font-family:
                 "Times New Roman",
                 Times,
@@ -527,7 +521,20 @@
             font-feature-settings: "lnum" 1, "tnum" 1;
         }
 
-        .time-label {
+        .wedding-date-sep {
+            font-family:
+                "Times New Roman",
+                Times,
+                serif;
+
+            font-size: 48px;
+
+            font-weight: 600;
+
+            color: #c69973;
+        }
+
+        .wedding-date-label {
             margin-top: 18px;
 
             font-family:
@@ -539,24 +546,11 @@
 
             font-size: 16px;
 
-            letter-spacing: 2px;
+            letter-spacing: 4px;
 
             color: #2c2a28;
 
             white-space: nowrap;
-        }
-
-        .separator {
-            font-family:
-                "Times New Roman",
-                Times,
-                serif;
-
-            font-size: 48px;
-
-            font-weight: 600;
-
-            color: #c69973;
         }
 
 
@@ -988,7 +982,7 @@
 
             :root {
                 --note-overlap: -50px;
-                --story-overlap: -110px;
+                --story-overlap: -45px;
             }
 
             .floral-deco {
@@ -1060,26 +1054,22 @@
                 margin-bottom: 22px;
             }
 
-            .countdown {
-                gap: 6px;
+            .wedding-date {
+                gap: 3px;
             }
 
-            .time-box {
-                min-width: 72px;
-            }
-
-            .time-number {
+            .wedding-date-day {
                 font-size: 42px;
             }
 
-            .time-label {
+            .wedding-date-label {
                 font-size: 11px;
 
-                letter-spacing: 1.2px;
+                letter-spacing: 2.4px;
             }
 
-            .separator {
-                font-size: 38px;
+            .wedding-date-sep {
+                font-size: 32px;
             }
 
             .wedding-section {
@@ -1156,6 +1146,10 @@
 
         @media (max-width: 380px) {
 
+            :root {
+                --story-overlap: -25px;
+            }
+
             .story-card-wrapper {
                 width: min(85%, 400px);
             }
@@ -1203,26 +1197,22 @@
                 padding: 24px 10px 45px;
             }
 
-            .countdown {
-                gap: 4px;
+            .wedding-date {
+                gap: 2px;
             }
 
-            .time-box {
-                min-width: 60px;
-            }
-
-            .time-number {
+            .wedding-date-day {
                 font-size: 34px;
             }
 
-            .time-label {
+            .wedding-date-label {
                 font-size: 9.5px;
 
-                letter-spacing: 1px;
+                letter-spacing: 2px;
             }
 
-            .separator {
-                font-size: 30px;
+            .wedding-date-sep {
+                font-size: 26px;
             }
 
             .wedding-section {
@@ -1399,7 +1389,7 @@
             </section>
 
 
-            <!-- COUNTDOWN -->
+            <!-- WEDDING DATE -->
 
             <section class="countdown-section">
 
@@ -1409,77 +1399,18 @@
                     alt="The next chapter begins in"
                 >
 
-                <div class="countdown">
+                <div class="wedding-date">
 
-                    <div class="time-box">
+                    <span class="wedding-date-day">26</span>
+                    <span class="wedding-date-sep">.</span>
+                    <span class="wedding-date-day">11</span>
+                    <span class="wedding-date-sep">.</span>
+                    <span class="wedding-date-day">2026</span>
 
-                        <div
-                            class="time-number"
-                            id="days"
-                        >
-                            00
-                        </div>
+                </div>
 
-                        <div class="time-label">
-                            DAYS
-                        </div>
-
-                    </div>
-
-                    <div class="separator">:</div>
-
-
-                    <div class="time-box">
-
-                        <div
-                            class="time-number"
-                            id="hours"
-                        >
-                            00
-                        </div>
-
-                        <div class="time-label">
-                            HOURS
-                        </div>
-
-                    </div>
-
-                    <div class="separator">:</div>
-
-
-                    <div class="time-box">
-
-                        <div
-                            class="time-number"
-                            id="minutes"
-                        >
-                            00
-                        </div>
-
-                        <div class="time-label">
-                            MINUTES
-                        </div>
-
-                    </div>
-
-                    <div class="separator">:</div>
-
-
-                    <div class="time-box">
-
-                        <div
-                            class="time-number"
-                            id="seconds"
-                        >
-                            00
-                        </div>
-
-                        <div class="time-label">
-                            SECONDS
-                        </div>
-
-                    </div>
-
+                <div class="wedding-date-label">
+                    THURSDAY
                 </div>
 
             </section>
@@ -1640,138 +1571,6 @@
 
 
     <script>
-
-        /* =========================================
-           COUNTDOWN
-        ========================================= */
-
-        const weddingDate =
-            new Date(
-                "January 27, 2027 00:00:00"
-            ).getTime();
-
-
-        function updateCountdown() {
-
-            const now =
-                new Date().getTime();
-
-            const distance =
-                weddingDate - now;
-
-
-            if (distance <= 0) {
-
-                document.getElementById("days").innerText = "00";
-                document.getElementById("hours").innerText = "00";
-                document.getElementById("minutes").innerText = "00";
-                document.getElementById("seconds").innerText = "00";
-
-                return;
-            }
-
-
-            const days =
-                Math.floor(
-                    distance /
-                    (
-                        1000 *
-                        60 *
-                        60 *
-                        24
-                    )
-                );
-
-
-            const hours =
-                Math.floor(
-                    (
-                        distance %
-                        (
-                            1000 *
-                            60 *
-                            60 *
-                            24
-                        )
-                    )
-                    /
-                    (
-                        1000 *
-                        60 *
-                        60
-                    )
-                );
-
-
-            const minutes =
-                Math.floor(
-                    (
-                        distance %
-                        (
-                            1000 *
-                            60 *
-                            60
-                        )
-                    )
-                    /
-                    (
-                        1000 *
-                        60
-                    )
-                );
-
-
-            const seconds =
-                Math.floor(
-                    (
-                        distance %
-                        (
-                            1000 *
-                            60
-                        )
-                    )
-                    /
-                    1000
-                );
-
-
-            document
-                .getElementById("days")
-                .innerText =
-                String(days)
-                .padStart(2, "0");
-
-
-            document
-                .getElementById("hours")
-                .innerText =
-                String(hours)
-                .padStart(2, "0");
-
-
-            document
-                .getElementById("minutes")
-                .innerText =
-                String(minutes)
-                .padStart(2, "0");
-
-
-            document
-                .getElementById("seconds")
-                .innerText =
-                String(seconds)
-                .padStart(2, "0");
-
-        }
-
-
-        updateCountdown();
-
-        setInterval(
-            updateCountdown,
-            1000
-        );
-
 
         /* =========================================
            RSVP
