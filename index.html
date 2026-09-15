@@ -5,10 +5,30 @@
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     >
 
-    <title>save the date </title>
+    <title>Save the Date</title>
+
+    <!-- ================================================
+         LINK PREVIEW (Open Graph / Twitter Card)
+         This is what makes WhatsApp, iMessage, Instagram,
+         etc. show a photo + title automatically when this
+         link is pasted or shared, instead of a plain link.
+         Edit the content values below to match your details.
+    ================================================= -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="You're Invited — Save the Date!">
+    <meta property="og:description" content="Tap to open our wedding invitation 💍">
+    <meta property="og:image" content="https://amit-and-geeta.onrender.com/wedding.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="https://amit-and-geeta.onrender.com/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="You're Invited — Save the Date!">
+    <meta name="twitter:description" content="Tap to open our wedding invitation 💍">
+    <meta name="twitter:image" content="https://amit-and-geeta.onrender.com/wedding.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
@@ -33,14 +53,21 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         html {
             scroll-behavior: smooth;
+
+            width: 100%;
+            max-width: 100%;
+
+            overflow-x: hidden;
         }
 
         body {
             width: 100%;
+            max-width: 100%;
             min-height: 100vh;
             overflow-x: hidden;
 
@@ -51,8 +78,14 @@
             background: #f3eeea;
         }
 
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
         .site {
             width: 100%;
+            max-width: 100%;
             min-height: 100vh;
             overflow-x: hidden;
 
@@ -138,7 +171,10 @@
 
         .second-page {
             width: 100%;
+            max-width: 900px;
             min-height: 100vh;
+
+            margin: 0 auto;
 
             position: relative;
 
@@ -429,8 +465,10 @@
         .music-hint {
             position: fixed;
 
-            bottom: 18px;
-            right: 18px;
+            bottom:
+                calc(18px + env(safe-area-inset-bottom, 0px));
+            right:
+                calc(18px + env(safe-area-inset-right, 0px));
 
             z-index: 60;
 
@@ -500,6 +538,8 @@
             align-items: flex-start;
 
             gap: 10px;
+
+            flex-wrap: wrap;
         }
 
         .time-box {
@@ -702,7 +742,8 @@
 
             text-align: center;
 
-            padding: 70px 20px;
+            padding: 70px 20px
+                calc(70px + env(safe-area-inset-bottom, 0px));
 
             position: relative;
 
@@ -732,7 +773,7 @@
 
             gap: 20px;
 
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
         }
 
         .rsvp-button {
@@ -823,7 +864,11 @@
 
             gap: 18px;
 
-            padding: 60px 12px 24px;
+            padding:
+                calc(60px + env(safe-area-inset-top, 0px))
+                calc(12px + env(safe-area-inset-right, 0px))
+                calc(24px + env(safe-area-inset-bottom, 0px))
+                calc(12px + env(safe-area-inset-left, 0px));
         }
 
         .story-overlay.active {
@@ -842,8 +887,10 @@
         .story-close {
             position: absolute;
 
-            top: 20px;
-            right: 20px;
+            top:
+                calc(20px + env(safe-area-inset-top, 0px));
+            right:
+                calc(20px + env(safe-area-inset-right, 0px));
 
             width: 42px;
             height: 42px;
@@ -1058,6 +1105,81 @@
 
 
         /* =========================================
+           TABLET / SMALL DESKTOP
+        ========================================= */
+
+        @media (min-width: 651px) and (max-width: 1024px) {
+
+            .second-page {
+                max-width: 640px;
+
+                box-shadow:
+                    0 0 60px
+                    rgba(0, 0, 0, 0.08);
+            }
+
+        }
+
+
+        /* =========================================
+           LARGE DESKTOP
+        ========================================= */
+
+        @media (min-width: 1025px) {
+
+            body {
+                background: #e7e0d6;
+            }
+
+            .second-page {
+                max-width: 560px;
+
+                box-shadow:
+                    0 0 70px
+                    rgba(0, 0, 0, 0.12);
+            }
+
+            .story-overlay {
+                background-color: rgba(20, 16, 12, 0.35);
+
+                background-blend-mode: darken;
+            }
+
+            .story-slider-area {
+                width: min(70vw, 900px);
+
+                height: min(68vh, 560px);
+
+                margin-top: 20px;
+            }
+
+            .story-card {
+                width: min(28vw, 420px);
+
+                border-radius: 24px;
+            }
+
+            .story-navigation {
+                gap: 60px;
+
+                margin-top: 10px;
+            }
+
+            .story-nav-btn {
+                font-size: 72px;
+            }
+
+            .story-close {
+                width: 50px;
+                height: 50px;
+
+                font-size: 26px;
+            }
+
+        }
+
+
+        /* =========================================
            MOBILE
         ========================================= */
 
@@ -1184,7 +1306,8 @@
 
                 padding:
                     60px
-                    15px;
+                    15px
+                    calc(60px + env(safe-area-inset-bottom, 0px));
             }
 
             .rsvp-buttons {
@@ -1204,7 +1327,8 @@
             }
 
             .story-overlay {
-                padding-top: 100px;
+                padding-top:
+                    calc(100px + env(safe-area-inset-top, 0px));
 
                 overflow-y: auto;
             }
@@ -1341,7 +1465,10 @@
             .rsvp-section {
                 min-height: 300px;
 
-                padding: 45px 12px;
+                padding:
+                    45px
+                    12px
+                    calc(45px + env(safe-area-inset-bottom, 0px));
             }
 
             .rsvp-heading {
@@ -1367,7 +1494,11 @@
             }
 
             .story-overlay {
-                padding: 75px 8px 16px;
+                padding:
+                    calc(75px + env(safe-area-inset-top, 0px))
+                    calc(8px + env(safe-area-inset-right, 0px))
+                    calc(16px + env(safe-area-inset-bottom, 0px))
+                    calc(8px + env(safe-area-inset-left, 0px));
 
                 gap: 12px;
             }
@@ -1396,12 +1527,43 @@
                 width: 36px;
                 height: 36px;
 
-                top: 12px;
-                right: 12px;
+                top:
+                    calc(12px + env(safe-area-inset-top, 0px));
+                right:
+                    calc(12px + env(safe-area-inset-right, 0px));
 
                 font-size: 20px;
             }
 
+        }
+
+
+        /* =========================================
+           SHORT / LANDSCAPE SCREENS
+        ========================================= */
+
+        @media (max-height: 480px) and (orientation: landscape) {
+
+            .opening-page-video {
+                object-fit: contain;
+            }
+
+            .story-slider-area {
+                height: min(70vh, 300px);
+
+                margin-top: 10px;
+            }
+
+            .story-overlay {
+                padding-top:
+                    calc(70px + env(safe-area-inset-top, 0px));
+
+                gap: 10px;
+            }
+
+            .wedding-section {
+                height: 220px;
+            }
         }
 
     </style>
@@ -1639,6 +1801,8 @@
                     >
 
                     <div class="rsvp-buttons">
+
+                       
 
                     </div>
 
