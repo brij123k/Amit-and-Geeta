@@ -399,8 +399,10 @@
 
             z-index: 1;
 
+            --rot: -4deg;
+
             transform:
-                rotate(-4deg);
+                rotate(var(--rot));
 
             cursor: pointer;
 
@@ -416,8 +418,152 @@
 
         .post-card:hover {
             transform:
-                rotate(-4deg)
+                rotate(var(--rot))
                 scale(1.02);
+        }
+
+
+        /* =========================================
+           POST CARD POP-UP + "CLICK HERE" HAND
+           The card gently pops every few seconds and a
+           hand taps on it, so guests notice it is clickable.
+        ========================================= */
+
+        @keyframes cardPop {
+
+            0% {
+                transform: rotate(var(--rot)) scale(1);
+            }
+
+            12% {
+                transform: rotate(var(--rot)) scale(1.07);
+            }
+
+            24% {
+                transform: rotate(var(--rot)) scale(1);
+            }
+
+            36% {
+                transform: rotate(var(--rot)) scale(1.04);
+            }
+
+            48%,
+            100% {
+                transform: rotate(var(--rot)) scale(1);
+            }
+
+        }
+
+        /* Starts after the page has revealed */
+        .site.revealed .post-card {
+            animation:
+                cardPop
+                3.2s
+                ease-in-out
+                1.2s
+                infinite;
+        }
+
+        .site.revealed .post-card:hover {
+            animation: none;
+
+            transform:
+                rotate(var(--rot))
+                scale(1.02);
+        }
+
+        .click-hint {
+            position: absolute;
+
+            right: 6%;
+            bottom: -6%;
+
+            z-index: 6;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            gap: 4px;
+
+            /* clicks go straight through to the post card */
+            pointer-events: none;
+
+            transition: opacity 0.4s ease;
+        }
+
+        .click-hint.hidden {
+            opacity: 0;
+        }
+
+        .click-hand {
+            font-size: 46px;
+
+            line-height: 1;
+
+            filter:
+                drop-shadow(
+                    0 6px 8px
+                    rgba(0, 0, 0, 0.3)
+                );
+
+            animation:
+                handTap
+                1.3s
+                ease-in-out
+                infinite;
+        }
+
+        .click-label {
+            background: #c69973;
+            color: #fff;
+
+            font-family: "Montserrat", sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.2px;
+
+            padding: 7px 14px;
+
+            border-radius: 30px;
+
+            white-space: nowrap;
+
+            box-shadow:
+                0 6px 14px
+                rgba(0, 0, 0, 0.22);
+        }
+
+        @keyframes handTap {
+
+            0%,
+            100% {
+                transform:
+                    translateY(0)
+                    scale(1);
+            }
+
+            45% {
+                transform:
+                    translateY(-12px)
+                    scale(0.92);
+            }
+
+            60% {
+                transform:
+                    translateY(-12px)
+                    scale(0.92);
+            }
+
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .site.revealed .post-card,
+            .click-hand {
+                animation: none;
+            }
+
         }
 
 
@@ -1416,13 +1562,17 @@
             }
 
             .post-card {
-                transform: rotate(-3deg);
+                --rot: -3deg;
             }
 
-            .post-card:hover {
-                transform:
-                    rotate(-3deg)
-                    scale(1.02);
+            .click-hand {
+                font-size: 38px;
+            }
+
+            .click-label {
+                font-size: 10.5px;
+
+                padding: 6px 12px;
             }
 
             .envelope-section {
@@ -1700,6 +1850,19 @@
                         alt="Play Music"
                         onclick="toggleStoryAudio()"
                     >
+
+                    <!-- Hand pointing at the post card -->
+                    <div
+                        class="click-hint"
+                        id="clickHint"
+                        aria-hidden="true"
+                    >
+
+                        <span class="click-hand">👆</span>
+
+                        <span class="click-label">Click here</span>
+
+                    </div>
 
                     <audio
                         id="storyAudio"
@@ -2275,6 +2438,11 @@
 
             document.body.style.overflow =
                 "hidden";
+
+            // The guest found the post card, so hide the "Click here" hand.
+            document
+                .getElementById("clickHint")
+                .classList.add("hidden");
 
             updateStorySlider();
 
