@@ -541,7 +541,7 @@
 
             z-index: 5;
 
-            cursor: pointer;
+            pointer-events: none;
 
             filter:
                 drop-shadow(
@@ -1757,8 +1757,7 @@
                         class="vinyl"
                         id="vinylPlayer"
                         src="./vinyl.png"
-                        alt="Play Music"
-                        onclick="toggleStoryAudio()"
+                        alt=""
                     >
 
                     <!-- Hand pointing at the post card -->
@@ -2238,32 +2237,9 @@
                 "vinylPlayer"
             );
 
-        function toggleStoryAudio() {
-
-            if (storyAudio.paused) {
-
-                storyAudio.play();
-
-                vinylPlayer.classList.add(
-                    "is-playing"
-                );
-
-            } else {
-
-                storyAudio.pause();
-
-                vinylPlayer.classList.remove(
-                    "is-playing"
-                );
-
-            }
-
-        }
-
-
         // Try to start the music automatically once the invitation opens.
         // If the browser does not allow sound without a tap, nothing
-        // happens (no badge, no message) and the vinyl still works.
+        // happens (no badge, no message, no button).
         function autoStartMusic() {
 
             const playPromise = storyAudio.play();
@@ -2281,7 +2257,7 @@
                     .catch(function () {
 
                         // The browser blocked music without a tap.
-                        // Stay silent. The vinyl can still start it.
+                        // Stay silent. Nothing is shown to the guest.
 
                     });
 
@@ -2764,6 +2740,85 @@
 
         // The video finishing naturally opens the site.
         openingVideo.addEventListener("ended", openMainWebsite);
+
+
+        /* =========================================
+           SOUND ON FIRST TOUCH (invisible, no badge or button)
+           Browsers never allow sound until the guest has touched
+           the screen once. So the video starts muted, and the
+           moment the guest touches / clicks ANYWHERE, the video
+           sound comes on (without restarting) and the music is
+           unlocked. If the guest never touches, nothing is shown.
+        ========================================= */
+
+        let audioUnlocked = false;
+
+        function onAnyTouch() {
+
+            // 1) Turn the video sound on.
+            if (!invitationOpened && openingVideo.muted) {
+
+                openingVideo.muted = false;
+
+                // Some browsers pause the video when it is unmuted.
+                if (openingVideo.paused && !openingVideo.ended) {
+
+                    openingVideo.play().catch(function () {});
+
+                }
+
+            }
+
+            // 2) Music.
+            if (invitationOpened) {
+
+                // Invitation is open: start the music if it is not playing yet.
+                if (storyAudio.paused) {
+
+                    autoStartMusic();
+
+                }
+
+            } else if (!audioUnlocked) {
+
+                // Still on the video: unlock the audio for later.
+                audioUnlocked = true;
+
+                storyAudio.play()
+                    .then(function () {
+
+                        if (!invitationOpened) {
+
+                            storyAudio.pause();
+                            storyAudio.currentTime = 0;
+
+                        } else {
+
+                            vinylPlayer.classList.add("is-playing");
+
+                        }
+
+                    })
+                    .catch(function () {});
+
+            }
+
+        }
+
+        [
+            "pointerdown",
+            "touchend",
+            "click",
+            "keydown"
+        ].forEach(function (evt) {
+
+            window.addEventListener(
+                evt,
+                onAnyTouch,
+                { passive: true }
+            );
+
+        });
 
         // If the video file itself fails to load, don't leave guests
         // stuck on a blank screen.
