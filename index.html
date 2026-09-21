@@ -19,13 +19,13 @@
     ================================================= -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="You're Invited — Save the Date!">
-    <meta property="og:description" content="Tap to open our wedding invitation 💍">
+    <meta property="og:description" content="Open our wedding invitation 💍">
     <meta property="og:image" content="https://cdn.shopify.com/s/files/1/0778/9474/6301/files/wedding.jpg?v=1789533768">
     <meta property="og:url" content="https://amit-and-geeta.onrender.com/">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="You're Invited — Save the Date!">
-    <meta name="twitter:description" content="Tap to open our wedding invitation 💍">
+    <meta name="twitter:description" content="Open our wedding invitation 💍">
     <meta name="twitter:image" content="https://cdn.shopify.com/s/files/1/0778/9474/6301/files/wedding.jpg?v=1789533768">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -131,8 +131,6 @@
 
             background: #E1DBCA;
 
-            cursor: pointer;
-
             overflow: hidden;
 
             opacity: 1;
@@ -162,6 +160,7 @@
             object-fit: contain;
             object-position: center;
         }
+
 
         /* =========================================
            MAIN WEDDING PAGE
@@ -359,8 +358,10 @@
 
             z-index: 1;
 
+            --rot: -4deg;
+
             transform:
-                rotate(-4deg);
+                rotate(var(--rot));
 
             cursor: pointer;
 
@@ -376,8 +377,152 @@
 
         .post-card:hover {
             transform:
-                rotate(-4deg)
+                rotate(var(--rot))
                 scale(1.02);
+        }
+
+
+        /* =========================================
+           POST CARD POP-UP + "CLICK HERE" HAND
+           The card gently pops every few seconds and a
+           hand taps on it, so guests notice it is clickable.
+        ========================================= */
+
+        @keyframes cardPop {
+
+            0% {
+                transform: rotate(var(--rot)) scale(1);
+            }
+
+            12% {
+                transform: rotate(var(--rot)) scale(1.07);
+            }
+
+            24% {
+                transform: rotate(var(--rot)) scale(1);
+            }
+
+            36% {
+                transform: rotate(var(--rot)) scale(1.04);
+            }
+
+            48%,
+            100% {
+                transform: rotate(var(--rot)) scale(1);
+            }
+
+        }
+
+        /* Starts after the page has revealed */
+        .site.revealed .post-card {
+            animation:
+                cardPop
+                3.2s
+                ease-in-out
+                1.2s
+                infinite;
+        }
+
+        .site.revealed .post-card:hover {
+            animation: none;
+
+            transform:
+                rotate(var(--rot))
+                scale(1.02);
+        }
+
+        .click-hint {
+            position: absolute;
+
+            right: 6%;
+            bottom: -6%;
+
+            z-index: 6;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            gap: 4px;
+
+            /* clicks go straight through to the post card */
+            pointer-events: none;
+
+            transition: opacity 0.4s ease;
+        }
+
+        .click-hint.hidden {
+            opacity: 0;
+        }
+
+        .click-hand {
+            font-size: 46px;
+
+            line-height: 1;
+
+            filter:
+                drop-shadow(
+                    0 6px 8px
+                    rgba(0, 0, 0, 0.3)
+                );
+
+            animation:
+                handTap
+                1.3s
+                ease-in-out
+                infinite;
+        }
+
+        .click-label {
+            background: #c69973;
+            color: #fff;
+
+            font-family: "Montserrat", sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.2px;
+
+            padding: 7px 14px;
+
+            border-radius: 30px;
+
+            white-space: nowrap;
+
+            box-shadow:
+                0 6px 14px
+                rgba(0, 0, 0, 0.22);
+        }
+
+        @keyframes handTap {
+
+            0%,
+            100% {
+                transform:
+                    translateY(0)
+                    scale(1);
+            }
+
+            45% {
+                transform:
+                    translateY(-12px)
+                    scale(0.92);
+            }
+
+            60% {
+                transform:
+                    translateY(-12px)
+                    scale(0.92);
+            }
+
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .site.revealed .post-card,
+            .click-hand {
+                animation: none;
+            }
+
         }
 
 
@@ -396,7 +541,7 @@
 
             z-index: 5;
 
-            cursor: pointer;
+            pointer-events: none;
 
             filter:
                 drop-shadow(
@@ -453,49 +598,6 @@
                     rotate(-4deg);
             }
 
-        }
-
-
-        /* =========================================
-           MUSIC HINT BADGE (shown if autoplay is blocked)
-        ========================================= */
-
-        .music-hint {
-            position: fixed;
-
-            bottom:
-                calc(18px + env(safe-area-inset-bottom, 0px));
-            right:
-                calc(18px + env(safe-area-inset-right, 0px));
-
-            z-index: 60;
-
-            background: rgba(44, 42, 40, 0.85);
-            color: #fff;
-
-            font-family: "Montserrat", sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-
-            padding: 10px 16px;
-
-            border-radius: 30px;
-
-            cursor: pointer;
-
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-
-            transition:
-                opacity 0.4s ease,
-                visibility 0.4s ease;
-        }
-
-        .music-hint.show {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
         }
 
 
@@ -1376,13 +1478,17 @@
             }
 
             .post-card {
-                transform: rotate(-3deg);
+                --rot: -3deg;
             }
 
-            .post-card:hover {
-                transform:
-                    rotate(-3deg)
-                    scale(1.02);
+            .click-hand {
+                font-size: 38px;
+            }
+
+            .click-label {
+                font-size: 10.5px;
+
+                padding: 6px 12px;
             }
 
             .envelope-section {
@@ -1573,14 +1679,14 @@
 
     <!-- =========================================
          FIRST OPENING PAGE (VIDEO)
+         The video starts by itself when the link is
+         opened. There is no tap-to-open screen.
     ========================================= -->
 
     <div
         class="opening-page"
         id="openingPage"
-        role="button"
-        tabindex="0"
-        aria-label="Tap to play and open invitation"
+        aria-label="Wedding invitation video"
     >
 
         <video
@@ -1589,7 +1695,6 @@
             src="./video.mp4"
             playsinline
             webkit-playsinline="true"
-            muted
             preload="auto"
         ></video>
 
@@ -1652,9 +1757,21 @@
                         class="vinyl"
                         id="vinylPlayer"
                         src="./vinyl.png"
-                        alt="Play Music"
-                        onclick="toggleStoryAudio()"
+                        alt=""
                     >
+
+                    <!-- Hand pointing at the post card -->
+                    <div
+                        class="click-hint"
+                        id="clickHint"
+                        aria-hidden="true"
+                    >
+
+                        <span class="click-hand">👆</span>
+
+                        <span class="click-label">Click here</span>
+
+                    </div>
 
                     <audio
                         id="storyAudio"
@@ -1930,16 +2047,6 @@
         </div>
 
 
-        <!-- MUSIC HINT (shown only if the browser blocks autoplay) -->
-
-        <div
-            class="music-hint"
-            id="musicHint"
-            onclick="toggleStoryAudio()"
-        >
-            ♪ Tap for music
-        </div>
-
     </div>
 
 
@@ -2130,44 +2237,9 @@
                 "vinylPlayer"
             );
 
-        const musicHint =
-            document.getElementById(
-                "musicHint"
-            );
-
-
-        function toggleStoryAudio() {
-
-            if (storyAudio.paused) {
-
-                storyAudio.play();
-
-                vinylPlayer.classList.add(
-                    "is-playing"
-                );
-
-                musicHint.classList.remove("show");
-
-            } else {
-
-                storyAudio.pause();
-
-                vinylPlayer.classList.remove(
-                    "is-playing"
-                );
-
-            }
-
-        }
-
-
-        // Try to start music automatically once the invitation opens.
-        // Browsers only allow audio with sound to autoplay if it is
-        // triggered by (or close to) a real user gesture. Since the
-        // guest has already tapped/clicked to open the video, that
-        // gesture is used here to also start the music. If the browser
-        // still blocks it, we quietly show a small "tap for music" hint
-        // instead of failing silently.
+        // Try to start the music once the invitation opens. It works
+        // if the guest has touched the screen at least once. If not,
+        // nothing is shown and the music simply stays off.
         function autoStartMusic() {
 
             const playPromise = storyAudio.play();
@@ -2184,8 +2256,8 @@
                     })
                     .catch(function () {
 
-                        // Autoplay was blocked by the browser.
-                        musicHint.classList.add("show");
+                        // The browser blocked music without a tap.
+                        // Stay silent. Nothing is shown to the guest.
 
                     });
 
@@ -2231,6 +2303,11 @@
 
             document.body.style.overflow =
                 "hidden";
+
+            // The guest found the post card, so hide the "Click here" hand.
+            document
+                .getElementById("clickHint")
+                .classList.add("hidden");
 
             updateStorySlider();
 
@@ -2589,86 +2666,16 @@
 
 
         /* =========================================
-           FIRST PAGE: TAP -> VIDEO PLAYS -> VIDEO ENDS -> SITE OPENS
+           FIRST PAGE: VIDEO AUTOPLAYS -> ENDS -> SITE OPENS
+           No tap-to-open screen, no buttons, no badges.
         ========================================= */
 
-        const openingPage =
-            document.getElementById(
-                "openingPage"
-            );
-
-        const openingVideo =
-            document.getElementById(
-                "openingVideo"
-            );
-
-        const siteContent =
-            document.getElementById(
-                "siteContent"
-            );
+        const openingPage  = document.getElementById("openingPage");
+        const openingVideo = document.getElementById("openingVideo");
+        const siteContent  = document.getElementById("siteContent");
 
         let invitationOpened = false;
-        let videoStarted = false;
-
-
-        function primeFirstFrame() {
-
-            function trySeek() {
-
-                try {
-
-                    openingVideo.currentTime = 0.05;
-
-                } catch (e) {}
-
-            }
-
-            if (openingVideo.readyState >= 1) {
-
-                trySeek();
-
-            } else {
-
-                openingVideo.addEventListener(
-                    "loadedmetadata",
-                    trySeek,
-                    { once: true }
-                );
-
-            }
-
-            openingVideo.addEventListener(
-                "seeked",
-                function onSeeked() {
-
-                    const primePromise = openingVideo.play();
-
-                    if (primePromise !== undefined) {
-
-                        primePromise
-                            .then(function () {
-
-                                openingVideo.pause();
-
-                                // reset back to frame 0 so playback starts clean on tap
-                                openingVideo.currentTime = 0;
-
-                            })
-                            .catch(function () {
-
-                            });
-
-                    }
-
-                },
-                { once: true }
-            );
-
-        }
-
-
-        openingVideo.load();
-        primeFirstFrame();
+        let audioUnlocked    = false;
 
         document.body.style.overflow = "hidden";
 
@@ -2683,97 +2690,137 @@
 
             document.body.style.overflow = "";
 
-            openingPage.classList.add(
-                "hide"
-            );
-
-            siteContent.classList.add(
-                "revealed"
-            );
+            openingPage.classList.add("hide");
+            siteContent.classList.add("revealed");
 
             // Start the music and begin gently auto-scrolling the
             // page once the invitation is revealed.
             autoStartMusic();
 
-            setTimeout(
-                startAutoScroll,
-                900
-            );
+            setTimeout(startAutoScroll, 900);
 
         }
 
 
-        function playOpeningVideo() {
+        // Runs automatically on page load.
+        // 1) Try to play WITH sound (works only in some browsers).
+        // 2) If blocked, play MUTED (always allowed).
+        // 3) If even that is blocked, open the invitation right away
+        //    so guests are never stuck on the opening page.
+        function autoplayOpeningVideo() {
 
-            if (videoStarted || invitationOpened) {
-                return;
-            }
-
-            videoStarted = true;
-
-            openingPage.classList.add("playing");
-
-            // Play the video at NORMAL speed from the start.
-            // (Previously this was forced to 2x speed, which made it
-            // look like the video barely played before the site opened.)
-            openingVideo.currentTime = 0;
             openingVideo.playbackRate = 1;
             openingVideo.muted = false;
 
-            const playPromise = openingVideo.play();
+            const attempt = openingVideo.play();
 
-            if (playPromise !== undefined) {
-
-                playPromise.catch(function (error) {
-
-                    // If the video genuinely cannot play (missing file,
-                    // unsupported format, browser autoplay block, etc.)
-                    // log WHY, then fall back to opening the site so the
-                    // guest is never stuck on a blank screen.
-                    console.error(
-                        "Opening video failed to play, opening site instead:",
-                        error
-                    );
-
-                    openMainWebsite();
-
-                });
-
+            if (attempt === undefined) {
+                return;
             }
+
+            attempt.catch(function () {
+
+                openingVideo.muted = true;
+
+                const mutedAttempt = openingVideo.play();
+
+                if (mutedAttempt !== undefined) {
+
+                    mutedAttempt.catch(function () {
+
+                        openMainWebsite();
+
+                    });
+
+                }
+
+            });
 
         }
 
 
-        // Only "ended" (the video finishing naturally) should open the site.
-        openingVideo.addEventListener(
-            "ended",
-            openMainWebsite
-        );
+        // Invisible: the first time the guest touches or clicks anywhere,
+        // the video sound comes on (without restarting) and the music
+        // is unlocked. Nothing is shown on screen.
+        function onAnyTouch() {
 
+            if (!invitationOpened && openingVideo.muted) {
 
-        openingPage.addEventListener(
-            "click",
-            playOpeningVideo
-        );
+                openingVideo.muted = false;
 
+                // Some browsers pause the video when it is unmuted.
+                if (openingVideo.paused && !openingVideo.ended) {
 
-        openingPage.addEventListener(
-            "keydown",
-            function(event) {
-
-                if (
-                    event.key === "Enter" ||
-                    event.key === " "
-                ) {
-
-                    event.preventDefault();
-
-                    playOpeningVideo();
+                    openingVideo.play().catch(function () {});
 
                 }
 
             }
-        );
+
+            if (invitationOpened) {
+
+                if (storyAudio.paused) {
+
+                    autoStartMusic();
+
+                }
+
+            } else if (!audioUnlocked) {
+
+                audioUnlocked = true;
+
+                storyAudio.play()
+                    .then(function () {
+
+                        if (!invitationOpened) {
+
+                            storyAudio.pause();
+                            storyAudio.currentTime = 0;
+
+                        } else {
+
+                            vinylPlayer.classList.add("is-playing");
+
+                        }
+
+                    })
+                    .catch(function () {});
+
+            }
+
+        }
+
+        [
+            "pointerdown",
+            "touchend",
+            "click",
+            "keydown"
+        ].forEach(function (evt) {
+
+            window.addEventListener(
+                evt,
+                onAnyTouch,
+                { passive: true }
+            );
+
+        });
+
+
+        // The video finishing naturally opens the site.
+        openingVideo.addEventListener("ended", openMainWebsite);
+
+        // If the video file itself fails to load, don't leave guests
+        // stuck on a blank screen.
+        openingVideo.addEventListener("error", function () {
+
+            console.error("Opening video could not be loaded, opening site instead.");
+
+            openMainWebsite();
+
+        });
+
+
+        autoplayOpeningVideo();
 
         updateStorySlider();
 
