@@ -163,6 +163,46 @@
             object-position: center;
         }
 
+
+        /* =========================================
+           SOUND HINT (shown on the opening video)
+        ========================================= */
+
+        .sound-hint {
+            position: absolute;
+
+            left: 50%;
+
+            bottom:
+                calc(24px + env(safe-area-inset-bottom, 0px));
+
+            transform: translateX(-50%);
+
+            background: rgba(44, 42, 40, 0.8);
+            color: #fff;
+
+            font-family: "Montserrat", sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+
+            padding: 10px 18px;
+
+            border-radius: 30px;
+
+            opacity: 0;
+
+            pointer-events: none;
+
+            transition: opacity 0.4s ease;
+
+            z-index: 5;
+        }
+
+        .sound-hint.show {
+            opacity: 1;
+        }
+
+
         /* =========================================
            MAIN WEDDING PAGE
         ========================================= */
@@ -1573,6 +1613,8 @@
 
     <!-- =========================================
          FIRST OPENING PAGE (VIDEO)
+         The video now starts by itself when the
+         link is opened (see the script at the bottom).
     ========================================= -->
 
     <div
@@ -1580,7 +1622,7 @@
         id="openingPage"
         role="button"
         tabindex="0"
-        aria-label="Tap to play and open invitation"
+        aria-label="Wedding invitation video. Tap to turn on sound."
     >
 
         <video
@@ -1590,8 +1632,11 @@
             playsinline
             webkit-playsinline="true"
             muted
+            autoplay
             preload="auto"
         ></video>
+
+        <div class="sound-hint" id="soundHint">🔊 Tap for sound</div>
 
     </div>
 
@@ -2163,11 +2208,10 @@
 
         // Try to start music automatically once the invitation opens.
         // Browsers only allow audio with sound to autoplay if it is
-        // triggered by (or close to) a real user gesture. Since the
-        // guest has already tapped/clicked to open the video, that
-        // gesture is used here to also start the music. If the browser
-        // still blocks it, we quietly show a small "tap for music" hint
-        // instead of failing silently.
+        // triggered by (or close to) a real user gesture. If the guest
+        // tapped the opening video, that gesture is used to unlock the
+        // music. If the browser still blocks it, we quietly show a small
+        // "tap for music" hint instead of failing silently.
         function autoStartMusic() {
 
             const playPromise = storyAudio.play();
@@ -2589,86 +2633,16 @@
 
 
         /* =========================================
-           FIRST PAGE: TAP -> VIDEO PLAYS -> VIDEO ENDS -> SITE OPENS
+           FIRST PAGE: VIDEO AUTOPLAYS -> ENDS -> SITE OPENS
         ========================================= */
 
-        const openingPage =
-            document.getElementById(
-                "openingPage"
-            );
-
-        const openingVideo =
-            document.getElementById(
-                "openingVideo"
-            );
-
-        const siteContent =
-            document.getElementById(
-                "siteContent"
-            );
+        const openingPage  = document.getElementById("openingPage");
+        const openingVideo = document.getElementById("openingVideo");
+        const siteContent  = document.getElementById("siteContent");
+        const soundHint    = document.getElementById("soundHint");
 
         let invitationOpened = false;
-        let videoStarted = false;
-
-
-        function primeFirstFrame() {
-
-            function trySeek() {
-
-                try {
-
-                    openingVideo.currentTime = 0.05;
-
-                } catch (e) {}
-
-            }
-
-            if (openingVideo.readyState >= 1) {
-
-                trySeek();
-
-            } else {
-
-                openingVideo.addEventListener(
-                    "loadedmetadata",
-                    trySeek,
-                    { once: true }
-                );
-
-            }
-
-            openingVideo.addEventListener(
-                "seeked",
-                function onSeeked() {
-
-                    const primePromise = openingVideo.play();
-
-                    if (primePromise !== undefined) {
-
-                        primePromise
-                            .then(function () {
-
-                                openingVideo.pause();
-
-                                // reset back to frame 0 so playback starts clean on tap
-                                openingVideo.currentTime = 0;
-
-                            })
-                            .catch(function () {
-
-                            });
-
-                    }
-
-                },
-                { once: true }
-            );
-
-        }
-
-
-        openingVideo.load();
-        primeFirstFrame();
+        let userInteracted   = false;
 
         document.body.style.overflow = "hidden";
 
@@ -2682,58 +2656,92 @@
             invitationOpened = true;
 
             document.body.style.overflow = "";
+            soundHint.classList.remove("show");
 
-            openingPage.classList.add(
-                "hide"
-            );
-
-            siteContent.classList.add(
-                "revealed"
-            );
+            openingPage.classList.add("hide");
+            siteContent.classList.add("revealed");
 
             // Start the music and begin gently auto-scrolling the
             // page once the invitation is revealed.
             autoStartMusic();
 
-            setTimeout(
-                startAutoScroll,
-                900
-            );
+            setTimeout(startAutoScroll, 900);
 
         }
 
 
-        function playOpeningVideo() {
+        // Runs automatically on page load.
+        // 1) Try to play WITH sound (works only in some browsers).
+        // 2) If blocked, play MUTED (always allowed) and show "Tap for sound".
+        function autoplayOpeningVideo() {
 
-            if (videoStarted || invitationOpened) {
-                return;
-            }
-
-            videoStarted = true;
-
-            openingPage.classList.add("playing");
-
-            // Play the video at NORMAL speed from the start.
-            // (Previously this was forced to 2x speed, which made it
-            // look like the video barely played before the site opened.)
-            openingVideo.currentTime = 0;
             openingVideo.playbackRate = 1;
             openingVideo.muted = false;
 
-            const playPromise = openingVideo.play();
+            const attempt = openingVideo.play();
 
-            if (playPromise !== undefined) {
+            if (attempt === undefined) {
+                return;
+            }
 
-                playPromise.catch(function (error) {
+            attempt
+                .then(function () {
 
-                    // If the video genuinely cannot play (missing file,
-                    // unsupported format, browser autoplay block, etc.)
-                    // log WHY, then fall back to opening the site so the
-                    // guest is never stuck on a blank screen.
-                    console.error(
-                        "Opening video failed to play, opening site instead:",
-                        error
-                    );
+                    // Autoplay with sound worked, no hint needed.
+
+                })
+                .catch(function () {
+
+                    // Blocked with sound, so fall back to muted autoplay.
+                    openingVideo.muted = true;
+
+                    const mutedAttempt = openingVideo.play();
+
+                    if (mutedAttempt !== undefined) {
+
+                        mutedAttempt
+                            .then(function () {
+
+                                soundHint.textContent = "🔊 Tap for sound";
+                                soundHint.classList.add("show");
+
+                            })
+                            .catch(function () {
+
+                                // Even muted autoplay is blocked.
+                                // Wait for the guest to tap to start.
+                                soundHint.textContent = "Tap to open";
+                                soundHint.classList.add("show");
+
+                            });
+
+                    }
+
+                });
+
+        }
+
+
+        // First tap / key press from the guest:
+        // - unmutes the video (or starts it if autoplay was blocked)
+        // - unlocks the music so it can start when the site opens
+        function onFirstGesture() {
+
+            if (userInteracted || invitationOpened) {
+                return;
+            }
+
+            userInteracted = true;
+
+            soundHint.classList.remove("show");
+
+            openingVideo.muted = false;
+
+            if (openingVideo.paused) {
+
+                openingVideo.play().catch(function (error) {
+
+                    console.error("Opening video failed, opening site instead:", error);
 
                     openMainWebsite();
 
@@ -2741,39 +2749,50 @@
 
             }
 
+            // Unlock audio for later (Safari needs a gesture before it will play).
+            storyAudio.play()
+                .then(function () {
+
+                    if (!invitationOpened) {
+                        storyAudio.pause();
+                        storyAudio.currentTime = 0;
+                    }
+
+                })
+                .catch(function () {});
+
         }
 
 
-        // Only "ended" (the video finishing naturally) should open the site.
-        openingVideo.addEventListener(
-            "ended",
-            openMainWebsite
-        );
+        // The video finishing naturally opens the site.
+        openingVideo.addEventListener("ended", openMainWebsite);
 
+        // If the video file itself fails to load, don't leave guests
+        // stuck on a blank screen.
+        openingVideo.addEventListener("error", function () {
 
-        openingPage.addEventListener(
-            "click",
-            playOpeningVideo
-        );
+            console.error("Opening video could not be loaded, opening site instead.");
 
+            openMainWebsite();
 
-        openingPage.addEventListener(
-            "keydown",
-            function(event) {
+        });
 
-                if (
-                    event.key === "Enter" ||
-                    event.key === " "
-                ) {
+        openingPage.addEventListener("pointerdown", onFirstGesture);
 
-                    event.preventDefault();
+        openingPage.addEventListener("keydown", function (event) {
 
-                    playOpeningVideo();
+            if (event.key === "Enter" || event.key === " ") {
 
-                }
+                event.preventDefault();
+
+                onFirstGesture();
 
             }
-        );
+
+        });
+
+
+        autoplayOpeningVideo();
 
         updateStorySlider();
 
