@@ -2726,16 +2726,37 @@
 
                 playPromise.catch(function (error) {
 
-                    // If the video genuinely cannot play (missing file,
-                    // unsupported format, browser autoplay block, etc.)
-                    // log WHY, then fall back to opening the site so the
-                    // guest is never stuck on a blank screen.
+                    // Some mobile browsers block play() with sound even
+                    // after a real tap. Retry muted so the guest still
+                    // SEES the video instead of the page jumping straight
+                    // to the invitation on a blank screen.
                     console.error(
-                        "Opening video failed to play, opening site instead:",
+                        "Opening video failed to play unmuted, retrying muted:",
                         error
                     );
 
-                    openMainWebsite();
+                    openingVideo.muted = true;
+
+                    const retryPromise = openingVideo.play();
+
+                    if (retryPromise !== undefined) {
+
+                        retryPromise.catch(function (retryError) {
+
+                            // The video genuinely cannot play (missing
+                            // file, unsupported format, etc.) - fall back
+                            // to opening the site so the guest is never
+                            // stuck on a blank screen.
+                            console.error(
+                                "Opening video failed to play, opening site instead:",
+                                retryError
+                            );
+
+                            openMainWebsite();
+
+                        });
+
+                    }
 
                 });
 
