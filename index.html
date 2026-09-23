@@ -131,6 +131,8 @@
 
             background: #E1DBCA;
 
+            cursor: pointer;
+
             overflow: hidden;
 
             opacity: 1;
@@ -159,6 +161,60 @@
 
             object-fit: contain;
             object-position: center;
+        }
+
+        /* Hand emoji + "Tap to Open" sitting ON the envelope in the
+           video. The video is centred and "contain"-fitted, so its
+           height is min(screen height, screen width x 16/9); the
+           hand sits just below the wax seal (~61% of the video height).
+           Hidden once the video starts. */
+        .tap-to-open {
+            position: absolute;
+            left: 50%;
+            top: calc(50% + 0.115 * min(100dvh, 177.78vw));
+
+            transform: translate(-50%, -50%);
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+
+            pointer-events: none;
+
+            transition: opacity 0.4s ease;
+        }
+
+        .tap-hand {
+            font-size: 44px;
+            line-height: 1;
+
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
+
+            animation: tapHand 1.2s ease-in-out infinite;
+        }
+
+        .tap-label {
+            color: #ffffff;
+
+            font-family: "Montserrat", sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            white-space: nowrap;
+
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .opening-page.playing .tap-to-open {
+            opacity: 0;
+        }
+
+        /* Hand "presses" up towards the seal, like a tap. */
+        @keyframes tapHand {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(0.92); }
         }
 
         /* =========================================
@@ -1534,18 +1590,27 @@
     <div
         class="opening-page"
         id="openingPage"
-        aria-label="Opening invitation video"
+        role="button"
+        tabindex="0"
+        aria-label="Tap to open invitation"
     >
 
+        <!-- "#t=0.001" makes phones show the video's first frame
+             (not a blank screen) before it is tapped. -->
         <video
             class="opening-page-video"
             id="openingVideo"
-            src="./video-mobile.mp4"
+            src="./video-mobile.mp4#t=0.001"
             playsinline
             webkit-playsinline="true"
             muted
             preload="auto"
         ></video>
+
+        <div class="tap-to-open" aria-hidden="true">
+            <span class="tap-hand">👆</span>
+            <span class="tap-label">Tap to Open</span>
+        </div>
 
     </div>
 
@@ -2101,8 +2166,8 @@
         // Try to start music automatically once the invitation opens.
         // Browsers only allow audio with sound to autoplay if it is
         // triggered by a real user gesture. If the browser blocks it, the
-        // guest's first touch anywhere on the page starts the music
-        // (enableSoundOnFirstTouch).
+        // guest's next touch anywhere on the page starts the music
+        // (startMusicOnTouch).
         function autoStartMusic() {
 
             const playPromise = storyAudio.play();
@@ -2120,7 +2185,7 @@
                     .catch(function () {
 
                         // Blocked by the browser - it will start on the
-                        // guest's first touch (enableSoundOnFirstTouch).
+                        // guest's next touch (startMusicOnTouch).
 
                     });
 
@@ -2638,12 +2703,10 @@
         }
 
 
-        // The video plays by itself as soon as the page loads - no tap.
-        // First try WITH sound. Most phones block sound until the guest
-        // touches the screen, so if that fails, play it muted instead.
-        // If even muted playback is blocked (e.g. battery saver), skip
-        // straight to the invitation.
-        function autoPlayOpeningVideo() {
+        // The guest taps "Tap to Open" once. That single tap lets the
+        // browser play sound, so the video plays WITH sound, and the
+        // music then starts automatically when the second page opens.
+        function playOpeningVideo() {
 
             if (videoStarted || invitationOpened) {
                 return;
@@ -2651,39 +2714,74 @@
 
             videoStarted = true;
 
-            // If the video hasn't started within 15s (very slow
-            // connection), open the site anyway.
-            armVideoWatchdog(15000);
+            openingPage.classList.add("playing");
 
+            // If the video hasn't started within 10s of the tap
+            // (very slow connection), open the site anyway.
+            armVideoWatchdog(10000);
+
+            // Unlock the music during this tap (needed on iPhone) so it
+            // can start by itself after the video, without another tap.
+            storyAudio.muted = true;
+
+            const unlockPromise = storyAudio.play();
+
+            if (unlockPromise !== undefined) {
+
+                unlockPromise
+                    .then(function () {
+
+                        if (!invitationOpened) {
+                            storyAudio.pause();
+                            storyAudio.currentTime = 0;
+                        }
+
+                        storyAudio.muted = false;
+
+                    })
+                    .catch(function () {
+
+                        storyAudio.muted = false;
+
+                    });
+
+            }
+
+            openingVideo.currentTime = 0;
             openingVideo.playbackRate = 1;
             openingVideo.muted = false;
 
-            const soundPromise = openingVideo.play();
+            const playPromise = openingVideo.play();
 
-            if (soundPromise === undefined) {
-                return;
-            }
+            if (playPromise !== undefined) {
 
-            soundPromise.catch(function () {
+                playPromise.catch(function (error) {
 
-                openingVideo.muted = true;
-
-                openingVideo.play().catch(function (error) {
-
+                    // Rare: sound still blocked - play muted so the
+                    // guest at least sees the video.
                     console.error(
-                        "Opening video could not autoplay, opening site instead:",
+                        "Opening video failed to play with sound, retrying muted:",
                         error
                     );
 
-                    openMainWebsite();
+                    openingVideo.muted = true;
+
+                    openingVideo.play().catch(function (retryError) {
+
+                        console.error(
+                            "Opening video failed to play, opening site instead:",
+                            retryError
+                        );
+
+                        openMainWebsite();
+
+                    });
 
                 });
 
-            });
+            }
 
         }
-
-        autoPlayOpeningVideo();
 
 
         // The video finishing naturally opens the site.
@@ -2693,40 +2791,54 @@
         );
 
 
-        // Sound: browsers only allow sound after the guest touches the
-        // page. On their FIRST touch / click / key press anywhere, turn
-        // on the video sound (if it is still playing) and start the
-        // music (if the invitation is open and music was blocked).
-        function enableSoundOnFirstTouch(event) {
+        openingPage.addEventListener(
+            "click",
+            playOpeningVideo
+        );
 
-            // Let the music button handle its own taps.
-            if (vinylPlayer.contains(event.target)) {
+
+        openingPage.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Enter" ||
+                    event.key === " "
+                ) {
+
+                    event.preventDefault();
+
+                    playOpeningVideo();
+
+                }
+
+            }
+        );
+
+
+        // Backup: if the browser still blocked the music, start it on
+        // the guest's next touch anywhere on the second page.
+        function startMusicOnTouch(event) {
+
+            if (
+                !invitationOpened ||
+                vinylPlayer.contains(event.target)
+            ) {
                 return;
             }
 
-            if (!invitationOpened) {
-
-                openingVideo.muted = false;
-
-            } else if (storyAudio.paused) {
-
+            if (storyAudio.paused) {
                 autoStartMusic();
-
             }
 
-            // Once music is running there is nothing left to unlock.
-            if (invitationOpened) {
-
-                ["touchend", "click", "keydown"].forEach(function (type) {
-                    document.removeEventListener(type, enableSoundOnFirstTouch, true);
-                });
-
-            }
+            ["touchend", "click", "keydown"].forEach(function (type) {
+                document.removeEventListener(type, startMusicOnTouch, true);
+            });
 
         }
 
         ["touchend", "click", "keydown"].forEach(function (type) {
-            document.addEventListener(type, enableSoundOnFirstTouch, true);
+            document.addEventListener(type, startMusicOnTouch, true);
         });
 
         updateStorySlider();
