@@ -1582,7 +1582,7 @@
         id="openingPage"
         role="button"
         tabindex="0"
-        aria-label="Tap to play and open invitation"
+        aria-label="Opening invitation video"
     >
 
         <video
@@ -1593,6 +1593,7 @@
             playsinline
             webkit-playsinline="true"
             muted
+            autoplay
             preload="auto"
         ></video>
 
@@ -2709,9 +2710,66 @@
         }
 
 
-        function playOpeningVideo() {
+        // Autoplay as soon as the page loads - no tap needed.
+        // Browsers only allow autoplay when the video is MUTED, so it
+        // starts muted. If the browser still blocks it (e.g. Android
+        // battery saver / data saver), a tap on the screen plays it.
+        function autoPlayOpeningVideo() {
 
             if (videoStarted || invitationOpened) {
+                return;
+            }
+
+            videoStarted = true;
+
+            openingPage.classList.add("playing");
+
+            // If the video hasn't started within 15s (very slow
+            // connection), open the site anyway.
+            armVideoWatchdog(15000);
+
+            openingVideo.playbackRate = 1;
+            openingVideo.muted = true;
+
+            const autoPromise = openingVideo.play();
+
+            if (autoPromise !== undefined) {
+
+                autoPromise.catch(function (error) {
+
+                    // Autoplay blocked - wait for the guest to tap.
+                    console.error(
+                        "Opening video autoplay blocked, waiting for tap:",
+                        error
+                    );
+
+                    clearTimeout(videoWatchdog);
+
+                    videoStarted = false;
+
+                    openingPage.classList.remove("playing");
+
+                });
+
+            }
+
+        }
+
+        autoPlayOpeningVideo();
+
+
+        function playOpeningVideo() {
+
+            if (invitationOpened) {
+                return;
+            }
+
+            // Video is already autoplaying muted - a tap just turns
+            // the sound on (allowed now because it's a real tap).
+            if (videoStarted) {
+
+                openingVideo.muted = false;
+
                 return;
             }
 
