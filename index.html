@@ -129,11 +129,7 @@
 
             z-index: 999999;
 
-            /* First frame of the video shown instantly, so the screen is
-               never blank while the video is still downloading/decoding. */
-            background: #E1DBCA url("./video-poster.jpg") center / contain no-repeat;
-
-            cursor: pointer;
+            background: #E1DBCA;
 
             overflow: hidden;
 
@@ -1580,8 +1576,6 @@
     <div
         class="opening-page"
         id="openingPage"
-        role="button"
-        tabindex="0"
         aria-label="Opening invitation video"
     >
 
@@ -1589,11 +1583,9 @@
             class="opening-page-video"
             id="openingVideo"
             src="./video-mobile.mp4"
-            poster="./video-poster.jpg"
             playsinline
             webkit-playsinline="true"
             muted
-            autoplay
             preload="auto"
         ></video>
 
@@ -2167,11 +2159,9 @@
 
         // Try to start music automatically once the invitation opens.
         // Browsers only allow audio with sound to autoplay if it is
-        // triggered by (or close to) a real user gesture. Since the
-        // guest has already tapped/clicked to open the video, that
-        // gesture is used here to also start the music. If the browser
-        // still blocks it, we quietly show a small "tap for music" hint
-        // instead of failing silently.
+        // triggered by a real user gesture. If the browser blocks it, we
+        // show a small "tap for music" hint, and the guest's first touch
+        // anywhere on the page starts the music (enableSoundOnFirstTouch).
         function autoStartMusic() {
 
             const playPromise = storyAudio.play();
@@ -2616,9 +2606,6 @@
         let videoWatchdog = null;
 
 
-        // The poster image (first frame) is shown until the video
-        // plays, so no play/pause "priming" is needed here - that trick
-        // blanked the frame on many Android phones.
         openingVideo.load();
 
 
@@ -2710,10 +2697,11 @@
         }
 
 
-        // Autoplay as soon as the page loads - no tap needed.
-        // Browsers only allow autoplay when the video is MUTED, so it
-        // starts muted. If the browser still blocks it (e.g. Android
-        // battery saver / data saver), a tap on the screen plays it.
+        // The video plays by itself as soon as the page loads - no tap.
+        // First try WITH sound. Most phones block sound until the guest
+        // touches the screen, so if that fails, play it muted instead.
+        // If even muted playback is blocked (e.g. battery saver), skip
+        // straight to the invitation.
         function autoPlayOpeningVideo() {
 
             if (videoStarted || invitationOpened) {
@@ -2722,147 +2710,86 @@
 
             videoStarted = true;
 
-            openingPage.classList.add("playing");
-
             // If the video hasn't started within 15s (very slow
             // connection), open the site anyway.
             armVideoWatchdog(15000);
 
             openingVideo.playbackRate = 1;
-            openingVideo.muted = true;
+            openingVideo.muted = false;
 
-            const autoPromise = openingVideo.play();
+            const soundPromise = openingVideo.play();
 
-            if (autoPromise !== undefined) {
+            if (soundPromise === undefined) {
+                return;
+            }
 
-                autoPromise.catch(function (error) {
+            soundPromise.catch(function () {
 
-                    // Autoplay blocked - wait for the guest to tap.
+                openingVideo.muted = true;
+
+                openingVideo.play().catch(function (error) {
+
                     console.error(
-                        "Opening video autoplay blocked, waiting for tap:",
+                        "Opening video could not autoplay, opening site instead:",
                         error
                     );
 
-                    clearTimeout(videoWatchdog);
-
-                    videoStarted = false;
-
-                    openingPage.classList.remove("playing");
+                    openMainWebsite();
 
                 });
 
-            }
+            });
 
         }
 
         autoPlayOpeningVideo();
 
 
-        function playOpeningVideo() {
-
-            if (invitationOpened) {
-                return;
-            }
-
-            // Video is already autoplaying muted - a tap just turns
-            // the sound on (allowed now because it's a real tap).
-            if (videoStarted) {
-
-                openingVideo.muted = false;
-
-                return;
-            }
-
-            videoStarted = true;
-
-            openingPage.classList.add("playing");
-
-            // If the video hasn't started within 10s of the tap
-            // (very slow connection), open the site anyway.
-            armVideoWatchdog(10000);
-
-            // Play the video at NORMAL speed from the start.
-            // (Previously this was forced to 2x speed, which made it
-            // look like the video barely played before the site opened.)
-            openingVideo.currentTime = 0;
-            openingVideo.playbackRate = 1;
-            openingVideo.muted = false;
-
-            const playPromise = openingVideo.play();
-
-            if (playPromise !== undefined) {
-
-                playPromise.catch(function (error) {
-
-                    // Some mobile browsers block play() with sound even
-                    // after a real tap. Retry muted so the guest still
-                    // SEES the video instead of the page jumping straight
-                    // to the invitation on a blank screen.
-                    console.error(
-                        "Opening video failed to play unmuted, retrying muted:",
-                        error
-                    );
-
-                    openingVideo.muted = true;
-
-                    const retryPromise = openingVideo.play();
-
-                    if (retryPromise !== undefined) {
-
-                        retryPromise.catch(function (retryError) {
-
-                            // The video genuinely cannot play (missing
-                            // file, unsupported format, etc.) - fall back
-                            // to opening the site so the guest is never
-                            // stuck on a blank screen.
-                            console.error(
-                                "Opening video failed to play, opening site instead:",
-                                retryError
-                            );
-
-                            openMainWebsite();
-
-                        });
-
-                    }
-
-                });
-
-            }
-
-        }
-
-
-        // Only "ended" (the video finishing naturally) should open the site.
+        // The video finishing naturally opens the site.
         openingVideo.addEventListener(
             "ended",
             openMainWebsite
         );
 
 
-        openingPage.addEventListener(
-            "click",
-            playOpeningVideo
-        );
+        // Sound: browsers only allow sound after the guest touches the
+        // page. On their FIRST touch / click / key press anywhere, turn
+        // on the video sound (if it is still playing) and start the
+        // music (if the invitation is open and music was blocked).
+        function enableSoundOnFirstTouch(event) {
 
+            // Let the music button handle its own taps.
+            if (
+                vinylPlayer.contains(event.target) ||
+                musicHint.contains(event.target)
+            ) {
+                return;
+            }
 
-        openingPage.addEventListener(
-            "keydown",
-            function(event) {
+            if (!invitationOpened) {
 
-                if (
-                    event.key === "Enter" ||
-                    event.key === " "
-                ) {
+                openingVideo.muted = false;
 
-                    event.preventDefault();
+            } else if (storyAudio.paused) {
 
-                    playOpeningVideo();
-
-                }
+                autoStartMusic();
 
             }
-        );
+
+            // Once music is running there is nothing left to unlock.
+            if (invitationOpened) {
+
+                ["touchend", "click", "keydown"].forEach(function (type) {
+                    document.removeEventListener(type, enableSoundOnFirstTouch, true);
+                });
+
+            }
+
+        }
+
+        ["touchend", "click", "keydown"].forEach(function (type) {
+            document.addEventListener(type, enableSoundOnFirstTouch, true);
+        });
 
         updateStorySlider();
 
