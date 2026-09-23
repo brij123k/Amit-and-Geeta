@@ -454,48 +454,6 @@
         }
 
 
-        /* =========================================
-           MUSIC HINT BADGE (shown if autoplay is blocked)
-        ========================================= */
-
-        .music-hint {
-            position: fixed;
-
-            bottom:
-                calc(18px + env(safe-area-inset-bottom, 0px));
-            right:
-                calc(18px + env(safe-area-inset-right, 0px));
-
-            z-index: 60;
-
-            background: rgba(44, 42, 40, 0.85);
-            color: #fff;
-
-            font-family: "Montserrat", sans-serif;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-
-            padding: 10px 16px;
-
-            border-radius: 30px;
-
-            cursor: pointer;
-
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-
-            transition:
-                opacity 0.4s ease,
-                visibility 0.4s ease;
-        }
-
-        .music-hint.show {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-        }
-
 
         /* =========================================
            COUNTDOWN
@@ -1926,16 +1884,6 @@
         </div>
 
 
-        <!-- MUSIC HINT (shown only if the browser blocks autoplay) -->
-
-        <div
-            class="music-hint"
-            id="musicHint"
-            onclick="toggleStoryAudio()"
-        >
-            ♪ Tap for music
-        </div>
-
     </div>
 
 
@@ -2126,11 +2074,6 @@
                 "vinylPlayer"
             );
 
-        const musicHint =
-            document.getElementById(
-                "musicHint"
-            );
-
 
         function toggleStoryAudio() {
 
@@ -2141,8 +2084,6 @@
                 vinylPlayer.classList.add(
                     "is-playing"
                 );
-
-                musicHint.classList.remove("show");
 
             } else {
 
@@ -2159,9 +2100,9 @@
 
         // Try to start music automatically once the invitation opens.
         // Browsers only allow audio with sound to autoplay if it is
-        // triggered by a real user gesture. If the browser blocks it, we
-        // show a small "tap for music" hint, and the guest's first touch
-        // anywhere on the page starts the music (enableSoundOnFirstTouch).
+        // triggered by a real user gesture. If the browser blocks it, the
+        // guest's first touch anywhere on the page starts the music
+        // (enableSoundOnFirstTouch).
         function autoStartMusic() {
 
             const playPromise = storyAudio.play();
@@ -2178,8 +2119,8 @@
                     })
                     .catch(function () {
 
-                        // Autoplay was blocked by the browser.
-                        musicHint.classList.add("show");
+                        // Blocked by the browser - it will start on the
+                        // guest's first touch (enableSoundOnFirstTouch).
 
                     });
 
@@ -2759,10 +2700,7 @@
         function enableSoundOnFirstTouch(event) {
 
             // Let the music button handle its own taps.
-            if (
-                vinylPlayer.contains(event.target) ||
-                musicHint.contains(event.target)
-            ) {
+            if (vinylPlayer.contains(event.target)) {
                 return;
             }
 
