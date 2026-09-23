@@ -2490,9 +2490,9 @@
         let autoScrollActive = false;
         let autoScrollRAF = null;
 
-        // How many pixels the page moves per animation frame.
+        // How fast the page moves, in pixels per SECOND.
         // Lower = slower / gentler scroll. Tweak to taste.
-        const AUTO_SCROLL_SPEED = 0.55;
+        const AUTO_SCROLL_SPEED = 35;
 
 
         function stopAutoScroll() {
@@ -2521,29 +2521,49 @@
 
             autoScrollActive = true;
 
+            // Keep our own exact position. Phones round the real scroll
+            // position to whole pixels, so tiny steps added to
+            // window.scrollY would get rounded away and never move.
+            let position = window.scrollY;
+            let lastTime = null;
 
-            function step() {
+
+            function step(now) {
 
                 if (!autoScrollActive) {
                     return;
                 }
 
+                // Time-based, so it moves at the same speed on 60Hz
+                // and 120Hz phones.
+                const elapsed =
+                    lastTime === null ? 0 : (now - lastTime) / 1000;
+
+                lastTime = now;
+
                 const maxScroll =
                     document.documentElement.scrollHeight -
                     window.innerHeight;
 
-                if (window.scrollY >= maxScroll - 2) {
+                position = Math.min(
+                    position + AUTO_SCROLL_SPEED * Math.min(elapsed, 0.1),
+                    maxScroll
+                );
+
+                // "instant" overrides the page's CSS smooth scrolling,
+                // which would otherwise restart every frame and stall.
+                window.scrollTo({
+                    top: position,
+                    behavior: "instant"
+                });
+
+                if (position >= maxScroll - 1) {
 
                     stopAutoScroll();
 
                     return;
 
                 }
-
-                window.scrollBy(
-                    0,
-                    AUTO_SCROLL_SPEED
-                );
 
                 autoScrollRAF =
                     requestAnimationFrame(
